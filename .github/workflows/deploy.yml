@@ -1,4 +1,4 @@
-name: Deploy NGINX Website
+name: Deploy NGINX Website to EC2
 
 on:
   push:
@@ -7,12 +7,26 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest   # or self-hosted if you prefer
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
       - name: Run Ansible Playbook
-        working-directory: ./terraform-gitaction
         run: |
           ansible-playbook ansible/playbook.yml -i ansible/inventory.ini
