@@ -1,0 +1,69 @@
+---
+- name: Install and configure NGINX
+  hosts: web
+  become: yes
+
+  vars:
+    config_directory: /etc/nginx/sites-available/default
+    file_path: /var/www/html/
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 36000
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      register: nginx_status
+
+    - name: Show nginx status
+      debug:
+        msg: "Nginx status is: {{ nginx_status.state }}"
+
+    - name: Create web root directory
+      file:
+        path: "{{ file_path }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Deploy website index.html
+      template:
+        src:  index.html
+        dest: "{{ file_path }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Replace default nginx site config
+      copy:
+        dest: "{{ config_directory }}"
+        content: |
+          server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+
+            root /var/www/html;
+            index index.html index.htm;
+
+            server_name _;
+
+            location / {
+              try_files $uri $uri/ =404;
+            }
+          }
+
+    - name: Reload nginx to apply new config
+      service:
+        name: nginx
+        state: reloaded
