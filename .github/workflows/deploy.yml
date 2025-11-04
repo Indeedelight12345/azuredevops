@@ -13,6 +13,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Ansible Playbook
-        working-diretory: ./terraform-gitaction
+        working-directory: ./terraform-gitaction
         run: |
           ansible-playbook ansible/playbook.yml -i ansible/inventory.ini
