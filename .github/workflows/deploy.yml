@@ -35,3 +35,6 @@ jobs:
         working-directory: ./terraform-gitaction
         run: |
           ansible-playbook ansible/playbook.yml -i ansible/inventory.ini --ssh-extra-args='-o StrictHostKeyChecking=no'
+
+
+
